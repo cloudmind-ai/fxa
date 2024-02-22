@@ -23,6 +23,24 @@ import { EMAIL_BOUNCE_STATUS_QUERY } from './gql';
 
 export const POLL_INTERVAL = 5000;
 
+function getAccountInfo(
+  emailFromLocationState?: string,
+  sessionTokenFromLocationState?: string,
+  uidFromLocationState?: string
+) {
+  let email = emailFromLocationState;
+  let sessionToken = sessionTokenFromLocationState;
+  let uid = uidFromLocationState;
+  // only read from local storage if email isn't provided via router state
+  if (!email || !sessionToken || !uid) {
+    const storedLocalAccount = currentAccount();
+    email = storedLocalAccount?.email;
+    sessionToken = storedLocalAccount?.sessionToken;
+    uid = storedLocalAccount?.uid;
+  }
+  return { email, sessionToken, uid };
+}
+
 const SignupConfirmCodeContainer = ({
   integration,
 }: {
@@ -39,11 +57,19 @@ const SignupConfirmCodeContainer = ({
     declinedSyncEngines,
     keyFetchToken,
     unwrapBKey,
+    sessionToken: sessionTokenFromLocationState,
+    email: emailFromLocationState,
+    uid: uidFromLocationState,
   } = location.state || {};
   const navigate = useNavigate();
 
-  const storedLocalAccount = currentAccount();
-  const { email, sessionToken } = storedLocalAccount || {};
+  // If a user tries to signin and they haven't verified their account yet, we pass
+  // this state through router state and redirect here. Otherwise, we read from localStorage.
+  const { email, sessionToken, uid } = getAccountInfo(
+    emailFromLocationState,
+    sessionTokenFromLocationState,
+    uidFromLocationState
+  );
 
   const { finishOAuthFlowHandler, oAuthDataError } = useFinishOAuthFlowHandler(
     authClient,
@@ -105,19 +131,7 @@ const SignupConfirmCodeContainer = ({
     return <LoadingSpinner fullScreen />;
   }
 
-  if (!storedLocalAccount || !sessionToken || !email) {
-    /* Users who reach this page should have account data set in localStorage.
-   * Account data is persisted local storage after creating an (unverified) account
-   * and after sign in. Users may also have localStorage set by the browser if
-   * they are logged in.
-
-   * The session token from local storage is required to verify the signup code.
-   * If this page is reached without an account in localStorage (e.g., directly from
-   * URL) or if the local storage is invalidated/cleared, redirect to `/`.
-
-   * TOOD: when we pull the account.verifySession call into the container component,
-   * ensure we're only reading from localStorage once. `sessionToken()` also reads from
-   * localStorage. */
+  if (!uid || !sessionToken || !email) {
     navigateToContentServer('/');
     return <LoadingSpinner fullScreen />;
   }
@@ -151,7 +165,7 @@ const SignupConfirmCodeContainer = ({
   return (
     <ConfirmSignupCode
       {...{
-        storedLocalAccount,
+        uid,
         email,
         sessionToken,
         integration,

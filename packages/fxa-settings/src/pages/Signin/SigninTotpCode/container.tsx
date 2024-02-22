@@ -14,6 +14,7 @@ import VerificationMethods from '../../../constants/verification-methods';
 import VerificationReasons from '../../../constants/verification-reasons';
 import { VERIFY_TOTP_CODE_MUTATION } from './gql';
 import { handleGQLError } from '../utils';
+import { OAuthSigninResult } from '../interfaces';
 
 export const viewName = 'signin-totp-code';
 
@@ -30,9 +31,11 @@ export const SigninTotpCodeContainer = ({
     state: {
       verificationReason: string;
       verificationMethod: string;
+      oAuthResult?: OAuthSigninResult;
     };
   };
-  const { verificationReason, verificationMethod } = location.state;
+  const { verificationReason, verificationMethod, oAuthResult } =
+    location.state;
   const storedLocalAccount = currentAccount();
   const { queryParamModel } = useValidatedQueryParams(SigninQueryParams);
 
@@ -47,6 +50,12 @@ export const SigninTotpCodeContainer = ({
       hardNavigateToContentServer(
         `/post_verify/password/force_password_change${location.search}`
       );
+    } else if (oAuthResult?.to) {
+      if (oAuthResult.shouldHardNavigate) {
+        hardNavigate(oAuthResult.to);
+      } else {
+        navigate(oAuthResult.to);
+      }
     } else {
       navigate('/settings');
     }

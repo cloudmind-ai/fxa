@@ -40,17 +40,17 @@ import {
 } from '../../../models';
 import { ConfirmSignupCodeProps } from './interfaces';
 import firefox from '../../../lib/channels/firefox';
-import { persistAccount } from '../../../lib/storage-utils';
 import { BrandMessagingPortal } from '../../../components/BrandMessaging';
 import GleanMetrics from '../../../lib/glean';
 import { useWebRedirect } from '../../../lib/hooks/useWebRedirect';
+import { currentAccount } from '../../../lib/cache';
 
 export const viewName = 'confirm-signup-code';
 
 const ConfirmSignupCode = ({
-  storedLocalAccount,
   email,
   sessionToken,
+  uid,
   integration,
   finishOAuthFlowHandler,
   newsletterSlugs: newsletters,
@@ -150,9 +150,14 @@ const ConfirmSignupCode = ({
         REACT_ENTRYPOINT
       );
 
-      // Update verification status of stored current account
-      storedLocalAccount.verified = true;
-      persistAccount(storedLocalAccount);
+      // OAUTH TODO in FXA-6518: is this the right way to store?
+      currentAccount({
+        sessionToken,
+        email,
+        uid,
+        // Update verification status of stored current account
+        verified: true,
+      });
 
       if (hasSelectedNewsletters) {
         // to match parity with content-server event, viewName is NOT included
@@ -176,7 +181,7 @@ const ConfirmSignupCode = ({
           return;
         } else {
           const { redirect, code, state } = await finishOAuthFlowHandler(
-            storedLocalAccount.uid,
+            uid,
             sessionToken,
             // yes, non-null operator is gross, but it's temporary.
             // see note in container component / router.js for this page, once

@@ -12,6 +12,7 @@ import {
   MOCK_SESSION_TOKEN,
   MOCK_UID,
   MOCK_UNWRAP_BKEY,
+  mockFinishOAuthFlowHandler,
 } from '../../mocks';
 import {
   ConfirmSignupCodeBaseIntegration,
@@ -54,13 +55,7 @@ export const Subject = ({
           newsletterSlugs,
           integration,
         }}
-        finishOAuthFlowHandler={() =>
-          Promise.resolve({
-            redirect: 'someUri',
-            code: 'someCode',
-            state: 'someState',
-          })
-        }
+        finishOAuthFlowHandler={mockFinishOAuthFlowHandler}
       />
     </LocationProvider>
   );

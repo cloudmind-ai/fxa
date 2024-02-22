@@ -4,7 +4,11 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { RouteComponentProps, useLocation, useNavigate } from '@reach/router';
-import { FtlMsg, hardNavigateToContentServer } from 'fxa-react/lib/utils';
+import {
+  FtlMsg,
+  hardNavigate,
+  hardNavigateToContentServer,
+} from 'fxa-react/lib/utils';
 import {
   isOAuthIntegration,
   useFtlMsgResolver,
@@ -39,6 +43,7 @@ const SigninTokenCode = ({
   integration,
   email,
   verificationReason,
+  oAuthResult,
 }: SigninTokenCodeProps & RouteComponentProps) => {
   usePageViewEvent(viewName, REACT_ENTRYPOINT);
   const session = useSession();
@@ -136,19 +141,22 @@ const SigninTokenCode = ({
         }
 
         if (integration.isSync()) {
-          // todo, sync stuff
-          // this might need to be separated into desktop v3 / oauth sync
+          // todo, sync stuff (desktop v3 here)
         }
-        if (isOAuthIntegration(integration)) {
-          // TODO: OAuth redirect stuff in oauth ticket
-          // The await of isDone is not entirely necessary when we are not
-          // redirecting the user to an RP.  However at the time of implementation
-          // for the Glean ping the redirect logic has not been implemented.
-          await GleanMetrics.isDone();
-        } else {
-          GleanMetrics.isDone();
-          navigate('/settings');
+        if (isOAuthIntegration(integration) && oAuthResult?.to) {
+          if (oAuthResult.shouldHardNavigate) {
+            await GleanMetrics.isDone();
+            hardNavigate(oAuthResult.to);
+            return;
+          } else {
+            GleanMetrics.isDone();
+            navigate(oAuthResult.to);
+            return;
+          }
         }
+
+        GleanMetrics.isDone();
+        navigate('/settings');
       } catch (error) {
         const localizedErrorMessage = getLocalizedErrorMessage(
           ftlMsgResolver,
@@ -172,6 +180,8 @@ const SigninTokenCode = ({
       navigate,
       verificationReason,
       location.search,
+      oAuthResult?.to,
+      oAuthResult?.shouldHardNavigate,
     ]
   );
 
