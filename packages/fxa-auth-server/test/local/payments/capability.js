@@ -14,7 +14,7 @@ const {
   mockPlans,
   mockContentfulPlanIdsToClientCapabilities,
 } = require('../../mocks');
-const { AuthLogger } = require('../../../lib/types');
+const { AppConfig, AuthLogger } = require('../../../lib/types');
 const { StripeHelper } = require('../../../lib/payments/stripe');
 const { PlayBilling } = require('../../../lib/payments/iap/google-play');
 const { AppleIAP } = require('../../../lib/payments/iap/apple-app-store');
@@ -170,8 +170,8 @@ describe('CapabilityService', () => {
         mockContentfulPlanIdsToClientCapabilities
       ),
     };
-    log = mockLog();
-    Container.set(AuthLogger, log);
+    Container.set(AppConfig, { contentful: { enabled: true, }});
+    Container.set(AuthLogger, mockLog());
     Container.set(StripeHelper, mockStripeHelper);
     Container.set(PlayBilling, mockPlayBilling);
     Container.set(AppleIAP, mockAppleIAP);
@@ -1169,6 +1169,31 @@ describe('CapabilityService', () => {
         `CapabilityService.planIdsToClientCapabilities - Returned Stripe as plan ids to client capabilities did not match.`,
         'error'
       );
+    });
+
+    it('returns results from Contentful when flag is enabled', async () => {
+      let mockCapabilityService = {};
+      mockCapabilityService = new CapabilityService();
+
+      const subscribedPrices = await mockCapabilityService.subscribedPriceIds(
+        UID
+      );
+
+      const mockContentfulCapabilities =
+        await mockCapabilityService.planIdsToClientCapabilities(
+          subscribedPrices
+        );
+
+      const expected = {
+        c1: [ 'capZZ', 'cap4', 'cap5', 'capAlpha' ],
+        '*': [ 'capAll' ],
+        c2: [ 'cap5', 'cap6', 'capC', 'capD' ],
+        c3: [ 'capD', 'capE' ]
+      }
+
+      if(AppConfig.contentful.enabled) {
+        assert.deepEqual(mockContentfulCapabilities, expected);
+      }
     });
   });
 
