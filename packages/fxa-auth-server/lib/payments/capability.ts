@@ -324,12 +324,6 @@ export class CapabilityService {
     targetPlanId: string,
     useFirestoreProductConfigs = false
   ): Promise<SubscriptionChangeEligibility> {
-    const emptyEligibilityResult: {
-      subscriptionEligibilityResult: SubscriptionEligibilityResult;
-      eligibleSourcePlan?: AbbrevPlan;
-    } = {
-      subscriptionEligibilityResult: SubscriptionEligibilityResult.INVALID,
-    };
     const contentfulEnabled = this.config.contentful.enabled;
 
     const allPlansByPlanId = await this.allAbbrevPlansByPlanId();
@@ -348,25 +342,21 @@ export class CapabilityService {
             'error' as SeverityLevel
           );
         }
+      } else {
+        try {
+          const eligibilityManagerResult =
+            await this.eligibilityFromEligibilityManager(
+              stripeSubscribedPlans,
+              iapSubscribedPlans,
+              targetPlan
+            );
 
-        return emptyEligibilityResult;
+          return eligibilityManagerResult;
+        } catch (error) {
+          this.log.error('subscriptions.getPlanEligibility', { error: error });
+          Sentry.captureException(error);
+        }
       }
-
-      try {
-        const eligibilityManagerResult =
-          await this.eligibilityFromEligibilityManager(
-            stripeSubscribedPlans,
-            iapSubscribedPlans,
-            targetPlan
-          );
-
-        return eligibilityManagerResult;
-      } catch (error) {
-        this.log.error('subscriptions.getPlanEligibility', { error: error });
-        Sentry.captureException(error);
-      }
-
-      return emptyEligibilityResult;
     }
 
     // TODO: will be removed in FXA-8918
@@ -900,10 +890,6 @@ export class CapabilityService {
    * Retrieve the client capabilities
    */
   async getClients() {
-    const emptyClients: {
-      clientId: string;
-      capabilities: string[];
-    }[] = [];
     const contentfulEnabled = this.config.contentful.enabled;
 
     if (contentfulEnabled) {
@@ -914,19 +900,17 @@ export class CapabilityService {
             'error' as SeverityLevel
           );
         }
+      } else {
+        try {
+          const clientsFromContentful =
+            await this.capabilityManager.getClients();
 
-        return emptyClients;
+          return clientsFromContentful;
+        } catch (error) {
+          this.log.error('subscriptions.getClients', { error: error });
+          Sentry.captureException(error);
+        }
       }
-
-      try {
-        const clientsFromContentful = await this.capabilityManager.getClients();
-
-        return clientsFromContentful;
-      } catch (error) {
-        this.log.error('subscriptions.getClients', { error: error });
-        Sentry.captureException(error);
-      }
-      return emptyClients;
     }
 
     // TODO: will be removed in FXA-8918
@@ -980,7 +964,6 @@ export class CapabilityService {
   async planIdsToClientCapabilities(
     subscribedPrices: string[]
   ): Promise<ClientIdCapabilityMap> {
-    const emptyCapabilities: ClientIdCapabilityMap = {};
     const contentfulEnabled = this.config.contentful.enabled;
 
     if (contentfulEnabled) {
@@ -995,25 +978,21 @@ export class CapabilityService {
             'error' as SeverityLevel
           );
         }
+      } else {
+        try {
+          const contentfulCapabilities =
+            await this.capabilityManager.planIdsToClientCapabilities(
+              subscribedPrices
+            );
 
-        return emptyCapabilities;
+          return contentfulCapabilities;
+        } catch (error) {
+          this.log.error('subscriptions.planIdsToClientCapabilities', {
+            error: error,
+          });
+          Sentry.captureException(error);
+        }
       }
-
-      try {
-        const contentfulCapabilities =
-          await this.capabilityManager.planIdsToClientCapabilities(
-            subscribedPrices
-          );
-
-        return contentfulCapabilities;
-      } catch (error) {
-        this.log.error('subscriptions.planIdsToClientCapabilities', {
-          error: error,
-        });
-        Sentry.captureException(error);
-      }
-
-      return emptyCapabilities;
     }
 
     // TODO: will be removed in FXA-8918
