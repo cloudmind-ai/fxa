@@ -9,6 +9,7 @@ const assert = { ...sinon.assert, ...require('chai').assert };
 const { Container } = require('typedi');
 
 const {
+  config,
   mockContentfulClients,
   mockLog,
   mockPlans,
@@ -170,7 +171,8 @@ describe('CapabilityService', () => {
         mockContentfulPlanIdsToClientCapabilities
       ),
     };
-    Container.set(AppConfig, { contentful: { enabled: true, }});
+    config.contentful.enabled = false;
+    Container.set(AppConfig, config);
     Container.set(AuthLogger, mockLog());
     Container.set(StripeHelper, mockStripeHelper);
     Container.set(PlayBilling, mockPlayBilling);
@@ -1170,31 +1172,6 @@ describe('CapabilityService', () => {
         'error'
       );
     });
-
-    it('returns results from Contentful when flag is enabled', async () => {
-      let mockCapabilityService = {};
-      mockCapabilityService = new CapabilityService();
-
-      const subscribedPrices = await mockCapabilityService.subscribedPriceIds(
-        UID
-      );
-
-      const mockContentfulCapabilities =
-        await mockCapabilityService.planIdsToClientCapabilities(
-          subscribedPrices
-        );
-
-      const expected = {
-        c1: [ 'capZZ', 'cap4', 'cap5', 'capAlpha' ],
-        '*': [ 'capAll' ],
-        c2: [ 'cap5', 'cap6', 'capC', 'capD' ],
-        c3: [ 'capD', 'capE' ]
-      }
-
-      if(AppConfig.contentful.enabled) {
-        assert.deepEqual(mockContentfulCapabilities, expected);
-      }
-    });
   });
 
   describe('getClients', () => {
@@ -1363,6 +1340,60 @@ describe('CapabilityService', () => {
         contentful: mockClientsFromContentful,
         stripe: mockClientsFromStripe,
       });
+    });
+  });
+
+  describe('returns data from Contentful when flag is enabled', () => {
+    beforeEach(async () => {
+      config.contentful.enabled = true;
+      Container.set(AppConfig, config);
+    });
+
+    it('returns planIdsToClientCapabilities from Contentful', async () => {
+      let mockCapabilityService = {};
+      mockCapabilityService = new CapabilityService();
+
+      const subscribedPrices = await mockCapabilityService.subscribedPriceIds(
+        UID
+      );
+
+      const mockContentfulCapabilities =
+        await mockCapabilityManager.planIdsToClientCapabilities(
+          subscribedPrices
+        );
+
+      const expected = {
+        c1: [ 'capZZ', 'cap4', 'cap5', 'capAlpha' ],
+        '*': [ 'capAll' ],
+        c2: [ 'cap5', 'cap6', 'capC', 'capD' ],
+        c3: [ 'capD', 'capE' ]
+      }
+
+      assert.deepEqual(mockContentfulCapabilities, expected);
+    });
+
+    it('returns getClients from Contentful', async () => {
+      const mockClientsFromContentful =
+        await mockCapabilityManager.getClients();
+
+      const expected = [
+        {
+          capabilities: ['exampleCap0', 'exampleCap1', 'exampleCap3'],
+          clientId: 'client1',
+        },
+        {
+          capabilities: [
+            'exampleCap0',
+            'exampleCap2',
+            'exampleCap4',
+            'exampleCap5',
+            'exampleCap6',
+            'exampleCap7',
+          ],
+          clientId: 'client2',
+        },
+      ];
+      assert.deepEqual(mockClientsFromContentful, expected);
     });
   });
 });
