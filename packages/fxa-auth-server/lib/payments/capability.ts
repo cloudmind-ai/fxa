@@ -336,12 +336,10 @@ export class CapabilityService {
 
     if (contentfulEnabled) {
       if (!this.eligibilityManager) {
-        if (this.logToSentry('elgibilityResult.CapabilityManagerNotFound')) {
-          Sentry.captureMessage(
-            `CapabilityManager not found.`,
-            'error' as SeverityLevel
-          );
-        }
+        throw error.internalValidationError(
+          'eligibilityResult',
+          'CapabilityManager not found.'
+        );
       } else {
         try {
           const eligibilityManagerResult =
@@ -354,7 +352,6 @@ export class CapabilityService {
           return eligibilityManagerResult;
         } catch (error) {
           this.log.error('subscriptions.getPlanEligibility', { error: error });
-          Sentry.captureException(error);
         }
       }
     }
@@ -894,12 +891,10 @@ export class CapabilityService {
 
     if (contentfulEnabled) {
       if (!this.capabilityManager) {
-        if (this.logToSentry('getClients.CapabilityManagerNotFound')) {
-          Sentry.captureMessage(
-            `CapabilityManager not found.`,
-            'error' as SeverityLevel
-          );
-        }
+        throw error.internalValidationError(
+          'getClients',
+          'CapabilityManager not found.'
+        );
       } else {
         try {
           const clientsFromContentful =
@@ -908,7 +903,6 @@ export class CapabilityService {
           return clientsFromContentful;
         } catch (error) {
           this.log.error('subscriptions.getClients', { error: error });
-          Sentry.captureException(error);
         }
       }
     }
@@ -968,16 +962,10 @@ export class CapabilityService {
 
     if (contentfulEnabled) {
       if (!this.capabilityManager) {
-        if (
-          this.logToSentry(
-            'planIdsToClientCapabilities.CapabilityManagerNotFound'
-          )
-        ) {
-          Sentry.captureMessage(
-            `CapabilityManager not found.`,
-            'error' as SeverityLevel
-          );
-        }
+        throw error.internalValidationError(
+          'planIdsToClientCapabilities',
+          'CapabilityManager not found.'
+        );
       } else {
         try {
           const contentfulCapabilities =
@@ -990,7 +978,6 @@ export class CapabilityService {
           this.log.error('subscriptions.planIdsToClientCapabilities', {
             error: error,
           });
-          Sentry.captureException(error);
         }
       }
     }
