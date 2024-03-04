@@ -132,6 +132,7 @@ const getNavigationTarget = async ({
           unwrapBKey,
           sessionToken,
           email,
+          uid,
         },
       };
     } else {
