@@ -42,20 +42,19 @@ export const Subject = ({
   integration?: ConfirmSignupCodeIntegration;
   newsletterSlugs?: string[];
 }) => {
-  const storedLocalAccount = { uid: MOCK_UID };
   return (
     <LocationProvider>
       <ConfirmSignupCode
         {...{
-          storedLocalAccount,
-          email: MOCK_EMAIL,
-          sessionToken: MOCK_SESSION_TOKEN,
-          keyFetchToken: MOCK_KEY_FETCH_TOKEN,
-          unwrapBKey: MOCK_UNWRAP_BKEY,
-          newsletterSlugs,
           integration,
+          newsletterSlugs,
         }}
+        email={MOCK_EMAIL}
         finishOAuthFlowHandler={mockFinishOAuthFlowHandler}
+        keyFetchToken={MOCK_KEY_FETCH_TOKEN}
+        sessionToken={MOCK_SESSION_TOKEN}
+        uid={MOCK_UID}
+        unwrapBKey={MOCK_UNWRAP_BKEY}
       />
     </LocationProvider>
   );
