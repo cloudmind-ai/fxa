@@ -40,7 +40,6 @@ import {
 } from '../../../models';
 import { ConfirmSignupCodeProps } from './interfaces';
 import firefox from '../../../lib/channels/firefox';
-import { BrandMessagingPortal } from '../../../components/BrandMessaging';
 import GleanMetrics from '../../../lib/glean';
 import { useWebRedirect } from '../../../lib/hooks/useWebRedirect';
 import { currentAccount } from '../../../lib/cache';
@@ -277,7 +276,6 @@ const ConfirmSignupCode = ({
 
   return (
     <AppLayout title={localizedPageTitle}>
-      <BrandMessagingPortal {...{ viewName }} />
       <CardHeader
         headingText="Enter confirmation code"
         headingAndSubheadingFtlId="confirm-signup-code-heading-2"

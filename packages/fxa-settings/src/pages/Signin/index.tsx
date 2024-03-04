@@ -17,7 +17,6 @@ import TermsPrivacyAgreement from '../../components/TermsPrivacyAgreement';
 import { REACT_ENTRYPOINT } from '../../constants';
 import CardHeader from '../../components/CardHeader';
 import ThirdPartyAuth from '../../components/ThirdPartyAuth';
-import { BrandMessagingPortal } from '../../components/BrandMessaging';
 import GleanMetrics from '../../lib/glean';
 import AppLayout from '../../components/AppLayout';
 import { SigninFormData, SigninProps } from './interfaces';
@@ -289,7 +288,6 @@ const Signin = ({
 
   return (
     <AppLayout>
-      <BrandMessagingPortal {...{ viewName }} />
       {isPasswordNeededRef.current ? (
         <CardHeader
           headingText="Enter your password"
