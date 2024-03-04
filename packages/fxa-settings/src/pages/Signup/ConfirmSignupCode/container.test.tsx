@@ -84,7 +84,7 @@ function mockEmailBounceQuery() {
     .mockReturnValue(mockEmailBounceStatusQuery());
 }
 
-// Setup default mocks
+// Apply default mocks
 function applyMocks() {
   jest.resetAllMocks();
   jest.restoreAllMocks();

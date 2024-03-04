@@ -94,7 +94,9 @@ describe('Signup page', () => {
     renderWithLocalizationProvider(<Subject />);
 
     // testAllL10n(screen, bundle);
-    await screen.findByRole('heading', { name: 'Set your password' });
+    await waitFor(() =>
+      screen.getByRole('heading', { name: 'Set your password' })
+    );
     screen.getByRole('link', { name: 'Change email' });
     screen.getByLabelText('Password');
     screen.getByLabelText('Repeat password');
@@ -740,7 +742,7 @@ describe('Signup page', () => {
   });
 
   describe('handle input errors', () => {
-    it('checks coppa is empty', () => {
+    it('checks coppa is empty', async () => {
       renderWithLocalizationProvider(
         <Subject
           {...{
@@ -769,16 +771,18 @@ describe('Signup page', () => {
       fireEvent.blur(ageInput);
       createAccountButton.click();
 
-      expect(
-        screen.getByText('You must enter your age to sign up')
-      ).toBeInTheDocument();
+      await waitFor(() =>
+        expect(
+          screen.getByText('You must enter your age to sign up')
+        ).toBeInTheDocument()
+      );
       expect(createAccountButton).toBeDisabled();
 
       // TODO: Make sure only valid values are accepted:
       //  https://mozilla-hub.atlassian.net/browse/FXA-8654
     });
 
-    it('shows error for non matching passwords', () => {
+    it('shows error for non matching passwords', async () => {
       renderWithLocalizationProvider(
         <Subject
           {...{
@@ -797,7 +801,9 @@ describe('Signup page', () => {
         target: { value: 'bar12346' },
       });
       fireEvent.blur(screen.getByTestId('verify-password-input-field'));
-      expect(screen.getByText('Passwords do not match')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Passwords do not match')).toBeInTheDocument();
+      });
     });
   });
 });
