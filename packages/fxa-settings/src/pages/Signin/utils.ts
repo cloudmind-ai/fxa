@@ -91,7 +91,7 @@ const getNavigationTarget = async ({
   unwrapBKey,
   integration,
   finishOAuthFlowHandler,
-  queryParams,
+  queryParams = '',
 }: NavigationOptions) => {
   const isOAuth = isOAuthIntegration(integration);
 

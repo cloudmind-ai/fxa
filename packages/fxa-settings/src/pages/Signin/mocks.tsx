@@ -183,7 +183,6 @@ export const Subject = ({
   finishOAuthFlowHandler = mockFinishOAuthFlowHandler,
   ...props // overrides
 }: Partial<SigninProps> = {}) => {
-  console.log('integration *', integration);
   return (
     <LocationProvider>
       <Signin

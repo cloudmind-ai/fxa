@@ -249,6 +249,9 @@ describe('Signin', () => {
                 '/confirm_signup_code',
                 {
                   state: {
+                    email: MOCK_EMAIL,
+                    uid: MOCK_UID,
+                    sessionToken: MOCK_SESSION_TOKEN,
                     keyFetchToken: undefined,
                     unwrapBKey: undefined,
                   },
@@ -307,16 +310,13 @@ describe('Signin', () => {
 
               enterPasswordAndSubmit();
               await waitFor(() => {
-                expect(finishOAuthFlowHandler).toHaveBeenCalledWith(
-                  MOCK_UID,
-                  MOCK_SESSION_TOKEN,
-                  MOCK_KEY_FETCH_TOKEN,
-                  MOCK_UNWRAP_BKEY
-                );
                 expect(mockNavigate).toHaveBeenCalledWith(
                   '/confirm_signup_code',
                   {
                     state: {
+                      email: MOCK_EMAIL,
+                      uid: MOCK_UID,
+                      sessionToken: MOCK_SESSION_TOKEN,
                       keyFetchToken: MOCK_KEY_FETCH_TOKEN,
                       unwrapBKey: MOCK_UNWRAP_BKEY,
                     },
@@ -404,6 +404,7 @@ describe('Signin', () => {
           });
           expect(GleanMetrics.login.error).toHaveBeenCalledTimes(1);
         });
+
         it('handles error due to TOTP required or insufficent ARC value', async () => {
           const beginSigninHandler = jest.fn().mockReturnValueOnce(
             createBeginSigninResponseError({
@@ -424,6 +425,7 @@ describe('Signin', () => {
         });
       });
     });
+
     describe('user does not have a password', () => {
       it('renders as expected without linked account', () => {
         render({ hasPassword: false });
@@ -438,6 +440,7 @@ describe('Signin', () => {
 
         passwordInputNotRendered();
       });
+
       it('renders as expected with linked account', () => {
         render({ hasPassword: false, hasLinkedAccount: true });
         signInHeaderRendered();
@@ -456,6 +459,7 @@ describe('Signin', () => {
       });
     });
   });
+
   describe('with sessionToken', () => {
     it('renders as expected', () => {
       render({ sessionToken: MOCK_SESSION_TOKEN });
@@ -502,7 +506,6 @@ describe('Signin', () => {
             createBeginSigninResponse({
               verified: false,
               verificationReason: VerificationReasons.SIGN_UP,
-              keyFetchToken: MOCK_KEY_FETCH_TOKEN,
             })
           );
           const finishOAuthFlowHandler = jest
@@ -517,14 +520,13 @@ describe('Signin', () => {
 
           enterPasswordAndSubmit();
           await waitFor(() => {
-            expect(finishOAuthFlowHandler).toHaveBeenCalledWith(
-              MOCK_UID,
-              MOCK_SESSION_TOKEN,
-              undefined,
-              undefined
-            );
-            // no router state
-            expect(mockNavigate).toHaveBeenCalledWith('/confirm_signup_code');
+            expect(mockNavigate).toHaveBeenCalledWith('/confirm_signup_code', {
+              state: {
+                email: MOCK_EMAIL,
+                uid: MOCK_UID,
+                sessionToken: MOCK_SESSION_TOKEN,
+              },
+            });
           });
         });
       });
@@ -544,6 +546,7 @@ describe('Signin', () => {
           passwordInputRendered();
         });
       });
+
       it('displays other errors', async () => {
         const unexpectedError = AuthUiErrors.UNEXPECTED_ERROR;
         const cachedSigninHandler = jest.fn().mockReturnValueOnce(
